@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DyslexAI Account</title>
+    <script src="shared.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .game-stats { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <h1>DyslexAI Progress Report</h1>
+    <div id="stats-container"></div>
+    
+    <script>
+        function displayStats() {
+            const user = getUserData();
+            const container = document.getElementById('stats-container');
+            
+            // General stats
+            container.innerHTML = `
+                <h2>Overall Statistics</h2>
+                <table>
+                    <tr><th>Username</th><td>${user.username}</td></tr>
+                    <tr><th>Total Games Played</th><td>${user.totalGames}</td></tr>
+                    <tr><th>Total Score</th><td>${user.totalScore}</td></tr>
+                    <tr><th>Total Time Spent</th><td>${user.totalTime} seconds</td></tr>
+                    <tr><th>Overall Accuracy</th><td>${calculateAccuracy(user.totalCorrect, user.totalAttempts)}%</td></tr>
+                </table>
+                
+                <h2>Game-Specific Statistics</h2>
+                ${renderGameStats(user)}
+                
+                <h2>Recent Activity</h2>
+                ${renderHistory(user.history)}
+            `;
+        }
+        
+        function renderGameStats(user) {
+            let html = '';
+            const gameNames = {
+                game1: 'Fill-in Missing Letter',
+                game2: 'Knoword',
+                game3: 'Word Hunt',
+                game4: 'Word Scramble',
+                game5: 'Spelling Bee'
+            };
+            
+            for (const [gameId, stats] of Object.entries(user.gameStats)) {
+                html += `
+                    <div class="game-stats">
+                        <h3>${gameNames[gameId]}</h3>
+                        <table>
+                            <tr><th>Plays</th><td>${stats.plays}</td></tr>
+                            <tr><th>Accuracy</th><td>${calculateAccuracy(stats.correct, stats.attempts)}%</td></tr>
+                            <tr><th>Avg Time</th><td>${stats.avgTime.toFixed(1)}s</td></tr>
+                            <tr><th>Best Score</th><td>${stats.bestScore}</td></tr>
+                        </table>
+                    </div>
+                `;
+            }
+            return html;
+        }
+        
+        function renderHistory(history) {
+            if (history.length === 0) return '<p>No activity yet.</p>';
+            
+            const recent = history.slice(-10).reverse(); // Show last 10, newest first
+            let html = '<table><tr><th>Game</th><th>Time</th><th>Result</th><th>Score</th><th>Time Spent</th></tr>';
+            
+            recent.forEach(item => {
+                const gameNames = {
+                    game1: 'Missing Letter',
+                    game2: 'Knoword',
+                    game3: 'Word Hunt',
+                    game4: 'Scramble',
+                    game5: 'Spelling Bee'
+                };
+                
+                html += `
+                    <tr>
+                        <td>${gameNames[item.gameId]}</td>
+                        <td>${new Date(item.timestamp).toLocaleString()}</td>
+                        <td>${item.isCorrect ? '✅ Correct' : '❌ Incorrect'}</td>
+                        <td>${item.score || 0}</td>
+                        <td>${item.timeSpent || 0}s</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</table>';
+            return html;
+        }
+        
+        window.onload = displayStats;
+    </script>
+</body>
+</html>
