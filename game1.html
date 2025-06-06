@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Missing Letter Game</title>
+    <script src="shared.js"></script>
+</head>
+<body>
+    <h1>Fill-in the Missing Letter</h1>
+    <div id="game-container"></div>
+    
+    <script>
+        const words = [
+            { word: 'ap_le', missing: 'p', answer: 'apple' },
+            { word: 'ban_na', missing: 'a', answer: 'banana' },
+            { word: 'ora_ge', missing: 'n', answer: 'orange' },
+            { word: 'str_wberry', missing: 'a', answer: 'strawberry' },
+            { word: 'g_apes', missing: 'r', answer: 'grapes' }
+        ];
+        
+        let currentWord;
+        let startTime;
+        
+        function newGame() {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('game-container').innerHTML = `
+                <p>Complete the word: ${currentWord.word}</p>
+                <p>Missing letter is: <input type="text" id="letter-input" maxlength="1" size="1"></p>
+                <button onclick="checkAnswer()">Submit</button>
+                <p id="result"></p>
+            `;
+            startTime = Date.now();
+        }
+        
+        function checkAnswer() {
+            const userInput = document.getElementById('letter-input').value.toLowerCase();
+            const isCorrect = userInput === currentWord.missing;
+            const timeSpent = (Date.now() - startTime) / 1000;
+            const score = isCorrect ? Math.max(10, 100 - Math.floor(timeSpent)) : 0;
+            
+            document.getElementById('result').innerHTML = isCorrect 
+                ? `✅ Correct! The word is "${currentWord.answer}"` 
+                : `❌ Incorrect. The missing letter was "${currentWord.missing}" (${currentWord.answer})`;
+            
+            saveGameResult('game1', {
+                isCorrect,
+                score,
+                timeSpent,
+                word: currentWord.word,
+                correctAnswer: currentWord.answer,
+                userAnswer: userInput
+            });
+            
+            setTimeout(newGame, 2000);
+        }
+        
+        window.onload = newGame;
+    </script>
+</body>
+</html>
