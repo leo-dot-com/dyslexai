@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Knoword Game</title>
+    <script src="shared.js"></script>
+</head>
+<body>
+    <h1>Knoword</h1>
+    <div id="game-container"></div>
+    
+    <script>
+        const wordDefinitions = [
+            { word: 'apple', definition: 'A common fruit that grows on trees' },
+            { word: 'library', definition: 'A place where books are kept for reading' },
+            { word: 'bicycle', definition: 'A two-wheeled vehicle powered by pedals' },
+            { word: 'ocean', definition: 'A very large expanse of sea' },
+            { word: 'mountain', definition: 'A large natural elevation of the earth\'s surface' }
+        ];
+        
+        let currentWord;
+        let startTime;
+        
+        function newGame() {
+            currentWord = wordDefinitions[Math.floor(Math.random() * wordDefinitions.length)];
+            document.getElementById('game-container').innerHTML = `
+                <p>Definition: ${currentWord.definition}</p>
+                <p>What is the word? <input type="text" id="word-input"></p>
+                <button onclick="checkAnswer()">Submit</button>
+                <p id="result"></p>
+            `;
+            startTime = Date.now();
+        }
+        
+        function checkAnswer() {
+            const userInput = document.getElementById('word-input').value.toLowerCase();
+            const isCorrect = userInput === currentWord.word;
+            const timeSpent = (Date.now() - startTime) / 1000;
+            const score = isCorrect ? Math.max(10, 100 - Math.floor(timeSpent)) : 0;
+            
+            document.getElementById('result').innerHTML = isCorrect 
+                ? `✅ Correct!` 
+                : `❌ Incorrect. The word was "${currentWord.word}"`;
+            
+            saveGameResult('game2', {
+                isCorrect,
+                score,
+                timeSpent,
+                definition: currentWord.definition,
+                correctAnswer: currentWord.word,
+                userAnswer: userInput
+            });
+            
+            setTimeout(newGame, 2000);
+        }
+        
+        window.onload = newGame;
+    </script>
+</body>
+</html>
