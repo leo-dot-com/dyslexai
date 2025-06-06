@@ -1,45 +1,286 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Missing Letter Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Letter Game | DyslexAI</title>
     <script src="shared.js"></script>
+    <style>
+        :root {
+            --primary: #3a7bd5;
+            --primary-light: #e3f2fd;
+            --secondary: #00d2ff;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4caf50;
+            --warning: #ff9800;
+        }
+
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://dyslexicfonts.com/fonts/OpenDyslexic-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2.2rem;
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 15px;
+        }
+
+        #game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .word-display {
+            font-size: 2.5rem;
+            margin: 30px 0;
+            letter-spacing: 2px;
+            text-align: center;
+            color: var(--dark);
+        }
+
+        .missing-letter-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .missing-letter-prompt {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .letter-input {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            margin: 0 10px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .letter-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.3);
+        }
+
+        .submit-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .correct {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .incorrect {
+            background-color: rgba(255, 107, 107, 0.1);
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .score-display {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-light);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            font-size: 1rem;
+            margin-top: 15px;
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .word-display {
+                font-size: 2rem;
+            }
+            
+            .letter-input {
+                font-size: 1.8rem;
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="timer" id="timer">0s</div>
     <h1>Fill-in the Missing Letter</h1>
     <div id="game-container"></div>
     
     <script>
         const words = [
-            { word: 'ap_le', missing: 'p', answer: 'apple' },
-            { word: 'ban_na', missing: 'a', answer: 'banana' },
-            { word: 'ora_ge', missing: 'n', answer: 'orange' },
-            { word: 'str_wberry', missing: 'a', answer: 'strawberry' },
-            { word: 'g_apes', missing: 'r', answer: 'grapes' }
+            { word: 'ap_le', missing: 'p', answer: 'apple', hint: 'A common red or green fruit' },
+            { word: 'ban_na', missing: 'a', answer: 'banana', hint: 'Yellow curved fruit with a peel' },
+            { word: 'ora_ge', missing: 'n', answer: 'orange', hint: 'Citrus fruit with segments' },
+            { word: 'str_wberry', missing: 'a', answer: 'strawberry', hint: 'Red berry with seeds on the outside' },
+            { word: 'g_apes', missing: 'r', answer: 'grapes', hint: 'Small fruits that grow in bunches' }
         ];
         
         let currentWord;
         let startTime;
+        let timerInterval;
         
         function newGame() {
+            // Clear previous timer if exists
+            if (timerInterval) clearInterval(timerInterval);
+            
             currentWord = words[Math.floor(Math.random() * words.length)];
             document.getElementById('game-container').innerHTML = `
-                <p>Complete the word: ${currentWord.word}</p>
-                <p>Missing letter is: <input type="text" id="letter-input" maxlength="1" size="1"></p>
-                <button onclick="checkAnswer()">Submit</button>
-                <p id="result"></p>
+                <div class="word-display">${formatWordDisplay(currentWord.word)}</div>
+                
+                <div class="missing-letter-container">
+                    <div class="missing-letter-prompt">Type the missing letter:</div>
+                    <input type="text" id="letter-input" class="letter-input" maxlength="1" size="1" autofocus>
+                </div>
+                
+                <button class="submit-btn" onclick="checkAnswer()">Submit Answer</button>
+                
+                <button class="hint-btn" onclick="showHint()">Need a hint?</button>
+                <div class="hint-text" id="hint-text" style="display:none"></div>
+                
+                <div id="result"></div>
+                <div class="score-display" id="score-display"></div>
             `;
+            
             startTime = Date.now();
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Focus the input field
+            document.getElementById('letter-input').focus();
+            
+            // Allow submission on Enter key
+            document.getElementById('letter-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+        }
+        
+        function formatWordDisplay(word) {
+            return word.replace('_', '<span style="color: var(--accent); text-decoration: underline;">_</span>');
+        }
+        
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('timer').textContent = `${elapsed}s`;
+        }
+        
+        function showHint() {
+            document.getElementById('hint-text').style.display = 'block';
+            document.getElementById('hint-text').textContent = currentWord.hint;
         }
         
         function checkAnswer() {
+            clearInterval(timerInterval);
             const userInput = document.getElementById('letter-input').value.toLowerCase();
             const isCorrect = userInput === currentWord.missing;
             const timeSpent = (Date.now() - startTime) / 1000;
             const score = isCorrect ? Math.max(10, 100 - Math.floor(timeSpent)) : 0;
             
-            document.getElementById('result').innerHTML = isCorrect 
-                ? `✅ Correct! The word is "${currentWord.answer}"` 
-                : `❌ Incorrect. The missing letter was "${currentWord.missing}" (${currentWord.answer})`;
+            const resultElement = document.getElementById('result');
+            resultElement.className = isCorrect ? 'correct' : 'incorrect';
+            resultElement.innerHTML = isCorrect 
+                ? `✅ Correct! The word is "<strong>${currentWord.answer}</strong>"`
+                : `❌ Incorrect. The missing letter was "<strong>${currentWord.missing}</strong>" (${currentWord.answer})`;
+            
+            document.getElementById('score-display').textContent = isCorrect 
+                ? `You earned ${score} points!`
+                : 'Try the next one!';
             
             saveGameResult('game1', {
                 isCorrect,
@@ -50,7 +291,7 @@
                 userAnswer: userInput
             });
             
-            setTimeout(newGame, 2000);
+            setTimeout(newGame, 3000);
         }
         
         window.onload = newGame;
