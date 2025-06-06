@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DyslexAI Demo</title>
+    <script src="shared.js"></script>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc3f7;
+            --background: #f8f9fa;
+            --text: #333;
+            --card-bg: #fff;
+        }
+
+        body {
+            font-family: 'Open Dyslexic', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            margin: 0;
+            padding: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: var(--secondary);
+            margin-top: 40px;
+            font-size: 1.8rem;
+        }
+
+        .games-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid var(--accent);
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-card a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .game-card p {
+            color: var(--text);
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .account-link {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            max-width: 250px;
+            margin-left: auto;
+            margin-right: auto;
+            transition: background-color 0.3s ease;
+        }
+
+        .account-link:hover {
+            background-color: var(--secondary);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo span {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .games-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <span>DyslexAI</span>
+    </div>
+    <h1>Learning Games Dashboard</h1>
+    
+    <h2>Select a Game:</h2>
+    
+    <div class="games-container">
+        <div class="game-card">
+            <a href="game1.html">Fill-in the Missing Letter</a>
+            <p>Complete words by filling in missing letters - great for letter recognition!</p>
+        </div>
+        
+        <div class="game-card">
+            <a href="game2.html">Knoword</a>
+            <p>Match definitions to words - builds vocabulary and comprehension.</p>
+        </div>
+        
+        <div class="game-card">
+            <a href="game3.html">Word Hunt</a>
+            <p>Find words in a letter grid - enhances visual tracking skills.</p>
+        </div>
+        
+        <div class="game-card">
+            <a href="game4.html">Word Scramble</a>
+            <p>Unscramble letters to form words - improves spelling patterns.</p>
+        </div>
+        
+        <div class="game-card">
+            <a href="game5.html">Spelling Bee</a>
+            <p>Spell words from audio prompts - strengthens phonemic awareness.</p>
+        </div>
+    </div>
+    
+    <a href="account.html" class="account-link">View Account Stats</a>
+</body>
+</html>
