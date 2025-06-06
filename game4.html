@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Scramble</title>
+    <script src="shared.js"></script>
+    <style>
+        .letter { 
+            display: inline-block; 
+            padding: 10px; 
+            margin: 5px; 
+            border: 1px solid #000; 
+            cursor: move;
+            background-color: #f0f0f0;
+        }
+        #target { 
+            min-height: 50px; 
+            border: 2px dashed #ccc; 
+            padding: 10px; 
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Scramble</h1>
+    <div id="game-container"></div>
+    
+    <script>
+        const words = ['apple', 'banana', 'orange', 'grape', 'pear'];
+        let currentWord;
+        let scrambledLetters = [];
+        let startTime;
+        
+        function newGame() {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            scrambledLetters = shuffleArray([...currentWord]);
+            startTime = Date.now();
+            renderGame();
+        }
+        
+        function renderGame() {
+            document.getElementById('game-container').innerHTML = `
+                <p>Unscramble these letters to form a word:</p>
+                <div id="letters">
+                    ${scrambledLetters.map((letter, index) => 
+                        `<div class="letter" draggable="true" id="letter-${index}" 
+                          ondragstart="dragStart(event)" data-letter="${letter}">
+                            ${letter}
+                        </div>`
+                    ).join('')}
+                </div>
+                <p>Drop area:</p>
+                <div id="target" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                <button onclick="checkAnswer()">Check Answer</button>
+                <p id="result"></p>
+            `;
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+        }
+        
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+        
+        function drop(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.getElementById(id);
+            e.target.appendChild(draggedElement);
+        }
+        
+        function checkAnswer() {
+            const target = document.getElementById('target');
+            const userWord = Array.from(target.children)
+                .map(el => el.getAttribute('data-letter'))
+                .join('');
+            
+            const isCorrect = userWord === currentWord;
+            const timeSpent = (Date.now() - startTime) / 1000;
+            const score = isCorrect ? Math.max(10, 100 - Math.floor(timeSpent)) : 0;
+            
+            document.getElementById('result').innerHTML = isCorrect 
+                ? `✅ Correct! The word is "${currentWord}"` 
+                : `❌ Incorrect. The word was "${currentWord}"`;
+            
+            saveGameResult('game4', {
+                isCorrect,
+                score,
+                timeSpent,
+                correctWord: currentWord,
+                userAnswer: userWord,
+                scrambledLetters: scrambledLetters.join('')
+            });
+            
+            setTimeout(newGame, 2000);
+        }
+        
+        window.onload = newGame;
+    </script>
+</body>
+</html>
