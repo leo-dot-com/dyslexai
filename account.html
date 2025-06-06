@@ -1,19 +1,209 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>DyslexAI Account</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DyslexAI Account - Progress Report</title>
     <script src="shared.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .game-stats { margin-bottom: 30px; }
+        :root {
+            --primary: #3a7bd5;
+            --primary-light: #e3f2fd;
+            --secondary: #00d2ff;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4caf50;
+            --warning: #ff9800;
+        }
+
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://dyslexicfonts.com/fonts/OpenDyslexic-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary);
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 40px 0 20px;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            margin: 25px 0 15px;
+            color: var(--dark);
+        }
+
+        .stats-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        .game-stats {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 10px 0;
+            height: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            transition: width 0.5s ease;
+        }
+
+        .accuracy-high {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .accuracy-medium {
+            color: var(--warning);
+            font-weight: bold;
+        }
+
+        .accuracy-low {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge-success {
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: #fff8e1;
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background-color: #ffebee;
+            color: var(--accent);
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .dashboard-link:hover {
+            background-color: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            th, td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>DyslexAI Progress Report</h1>
-    <div id="stats-container"></div>
+    <h1>Your DyslexAI Progress Report</h1>
+    <div id="stats-container" class="stats-container"></div>
     
     <script>
         function displayStats() {
@@ -27,15 +217,23 @@
                     <tr><th>Username</th><td>${user.username}</td></tr>
                     <tr><th>Total Games Played</th><td>${user.totalGames}</td></tr>
                     <tr><th>Total Score</th><td>${user.totalScore}</td></tr>
-                    <tr><th>Total Time Spent</th><td>${user.totalTime} seconds</td></tr>
-                    <tr><th>Overall Accuracy</th><td>${calculateAccuracy(user.totalCorrect, user.totalAttempts)}%</td></tr>
+                    <tr><th>Total Time Spent</th><td>${formatTime(user.totalTime)}</td></tr>
+                    <tr><th>Overall Accuracy</th><td>${renderAccuracy(user.totalCorrect, user.totalAttempts)}</td></tr>
                 </table>
+                
+                <h2>Your Progress</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${calculateProgress(user)}%"></div>
+                </div>
+                <p>You've completed ${calculateProgress(user)}% of your learning journey</p>
                 
                 <h2>Game-Specific Statistics</h2>
                 ${renderGameStats(user)}
                 
                 <h2>Recent Activity</h2>
                 ${renderHistory(user.history)}
+                
+                <a href="dashboard.html" class="dashboard-link">Back to Dashboard</a>
             `;
         }
         
@@ -50,15 +248,19 @@
             };
             
             for (const [gameId, stats] of Object.entries(user.gameStats)) {
+                const accuracy = calculateAccuracy(stats.correct, stats.attempts);
                 html += `
                     <div class="game-stats">
                         <h3>${gameNames[gameId]}</h3>
                         <table>
                             <tr><th>Plays</th><td>${stats.plays}</td></tr>
-                            <tr><th>Accuracy</th><td>${calculateAccuracy(stats.correct, stats.attempts)}%</td></tr>
-                            <tr><th>Avg Time</th><td>${stats.avgTime.toFixed(1)}s</td></tr>
+                            <tr><th>Accuracy</th><td>${renderAccuracy(stats.correct, stats.attempts)}</td></tr>
+                            <tr><th>Average Time</th><td>${formatTime(stats.avgTime)}</td></tr>
                             <tr><th>Best Score</th><td>${stats.bestScore}</td></tr>
                         </table>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${accuracy}%"></div>
+                        </div>
                     </div>
                 `;
             }
@@ -66,10 +268,10 @@
         }
         
         function renderHistory(history) {
-            if (history.length === 0) return '<p>No activity yet.</p>';
+            if (history.length === 0) return '<p>No activity yet. Play some games to see your progress here!</p>';
             
             const recent = history.slice(-10).reverse(); // Show last 10, newest first
-            let html = '<table><tr><th>Game</th><th>Time</th><th>Result</th><th>Score</th><th>Time Spent</th></tr>';
+            let html = '<table><tr><th>Game</th><th>When</th><th>Result</th><th>Score</th><th>Duration</th></tr>';
             
             recent.forEach(item => {
                 const gameNames = {
@@ -80,19 +282,56 @@
                     game5: 'Spelling Bee'
                 };
                 
+                const resultClass = item.isCorrect ? 'badge-success' : 'badge-danger';
+                const resultText = item.isCorrect ? 'Correct' : 'Incorrect';
+                
                 html += `
                     <tr>
                         <td>${gameNames[item.gameId]}</td>
-                        <td>${new Date(item.timestamp).toLocaleString()}</td>
-                        <td>${item.isCorrect ? '✅ Correct' : '❌ Incorrect'}</td>
+                        <td><span class="timestamp">${formatTimestamp(item.timestamp)}</span></td>
+                        <td><span class="badge ${resultClass}">${resultText}</span></td>
                         <td>${item.score || 0}</td>
-                        <td>${item.timeSpent || 0}s</td>
+                        <td>${formatTime(item.timeSpent || 0)}</td>
                     </tr>
                 `;
             });
             
             html += '</table>';
             return html;
+        }
+        
+        function calculateAccuracy(correct, attempts) {
+            return attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
+        }
+        
+        function renderAccuracy(correct, attempts) {
+            const accuracy = calculateAccuracy(correct, attempts);
+            let className = 'accuracy-high';
+            if (accuracy < 70) className = 'accuracy-medium';
+            if (accuracy < 50) className = 'accuracy-low';
+            return `<span class="${className}">${accuracy}%</span>`;
+        }
+        
+        function formatTime(seconds) {
+            if (seconds < 60) return `${seconds} sec`;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes} min ${remainingSeconds} sec`;
+        }
+        
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        function calculateProgress(user) {
+            // Simple progress calculation - can be customized
+            const totalPossible = Object.keys(user.gameStats).length * 100;
+            let earned = 0;
+            for (const [gameId, stats] of Object.entries(user.gameStats)) {
+                earned += Math.min(100, stats.plays * 5 + calculateAccuracy(stats.correct, stats.attempts) * 0.5);
+            }
+            return Math.min(100, Math.round((earned / totalPossible) * 100));
         }
         
         window.onload = displayStats;
