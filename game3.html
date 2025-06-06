@@ -5,7 +5,8 @@
     <script src="shared.js"></script>
     <style>
         .grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 2px; margin: 10px 0; }
-        .cell { width: 40px; height: 40px; border: 1px solid #000; display: flex; justify-content: center; align-items: center; }
+        .cell { width: 40px; height: 40px; border: 1px solid #000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .selected { background-color: lightblue; }
         .found { background-color: lightgreen; }
     </style>
 </head>
@@ -39,11 +40,13 @@
         
         let currentGame;
         let foundWords = [];
+        let selectedCells = [];
         let startTime;
         
         function newGame() {
             currentGame = wordSets[Math.floor(Math.random() * wordSets.length)];
             foundWords = [];
+            selectedCells = [];
             startTime = Date.now();
             renderGame();
         }
@@ -59,58 +62,72 @@
                     const isFound = foundWords.some(word => 
                         word.cells.some(cell => cell.row === rowIndex && cell.col === colIndex)
                     );
-                    html += `<div class="cell ${isFound ? 'found' : ''}" 
+                    const isSelected = selectedCells.some(cell => cell.row === rowIndex && cell.col === colIndex);
+                    
+                    html += `<div class="cell ${isFound ? 'found' : ''} ${isSelected ? 'selected' : ''}" 
                                 data-row="${rowIndex}" data-col="${colIndex}"
-                                onclick="selectCell(this)">
+                                onclick="selectCell(this, ${rowIndex}, ${colIndex})">
                                 ${letter}
                             </div>`;
                 });
             });
             
             html += `</div>
-                <p>Selected letters: <span id="selected-letters"></span></p>
+                <p>Selected letters: <span id="selected-letters">${getSelectedLetters()}</span></p>
                 <button onclick="checkWord()">Check Word</button>
                 <p id="result"></p>
                 <p>Found words: ${foundWords.map(w => w.word).join(', ') || 'None'}</p>
             `;
             
             document.getElementById('game-container').innerHTML = html;
-            document.getElementById('selected-letters').textContent = '';
         }
         
-        let selectedCells = [];
-        
-        function selectCell(cell) {
-            const row = parseInt(cell.getAttribute('data-row'));
-            const col = parseInt(cell.getAttribute('data-col'));
+        function selectCell(element, row, col) {
+            // If no cells selected yet, just select this one
+            if (selectedCells.length === 0) {
+                selectedCells.push({ row, col, letter: element.textContent });
+                element.classList.add('selected');
+                updateSelectedLetters();
+                return;
+            }
             
-            // Check if adjacent to last selected cell
-            if (selectedCells.length > 0) {
-                const last = selectedCells[selectedCells.length - 1];
-                if (Math.abs(row - last.row) > 1 || Math.abs(col - last.col) > 1) {
-                    alert('Please select adjacent letters!');
-                    return;
+            // Check if this cell is adjacent to the last selected cell
+            const lastCell = selectedCells[selectedCells.length - 1];
+            const rowDiff = Math.abs(row - lastCell.row);
+            const colDiff = Math.abs(col - lastCell.col);
+            
+            if (rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0)) {
+                // Check if already selected (to allow unselecting)
+                const index = selectedCells.findIndex(c => c.row === row && c.col === col);
+                if (index >= 0) {
+                    selectedCells.splice(index, 1);
+                    element.classList.remove('selected');
+                } else {
+                    selectedCells.push({ row, col, letter: element.textContent });
+                    element.classList.add('selected');
                 }
-            }
-            
-            // Toggle selection
-            const index = selectedCells.findIndex(c => c.row === row && c.col === col);
-            if (index >= 0) {
-                selectedCells.splice(index, 1);
-                cell.style.backgroundColor = '';
+                updateSelectedLetters();
             } else {
-                selectedCells.push({ row, col, letter: cell.textContent });
-                cell.style.backgroundColor = 'lightblue';
+                alert('Please select adjacent letters!');
             }
-            
-            document.getElementById('selected-letters').textContent = 
-                selectedCells.map(c => c.letter).join('');
+        }
+        
+        function getSelectedLetters() {
+            return selectedCells.map(c => c.letter).join('');
+        }
+        
+        function updateSelectedLetters() {
+            const display = document.getElementById('selected-letters');
+            if (display) display.textContent = getSelectedLetters();
         }
         
         function checkWord() {
-            if (selectedCells.length === 0) return;
+            if (selectedCells.length === 0) {
+                document.getElementById('result').textContent = 'Please select some letters first!';
+                return;
+            }
             
-            const word = selectedCells.map(c => c.letter).join('').toLowerCase();
+            const word = getSelectedLetters().toLowerCase();
             const isWord = currentGame.words.includes(word);
             const alreadyFound = foundWords.some(w => w.word === word);
             
@@ -121,6 +138,10 @@
                 });
                 document.getElementById('result').textContent = `✅ Found "${word}"!`;
                 
+                // Clear selection
+                selectedCells = [];
+                updateSelectedLetters();
+                
                 if (foundWords.length === currentGame.words.length) {
                     const timeSpent = (Date.now() - startTime) / 1000;
                     const score = Math.max(10, 500 - Math.floor(timeSpent));
@@ -128,7 +149,7 @@
                     saveGameResult('game3', {
                         isCorrect: true,
                         score,
-                        timeSpent: timeSpent,
+                        timeSpent,
                         words: currentGame.words,
                         foundWords: foundWords.map(w => w.word),
                         grid: currentGame.grid
@@ -142,7 +163,6 @@
                 document.getElementById('result').textContent = `❌ "${word}" is not in the list`;
             }
             
-            selectedCells = [];
             renderGame();
         }
         
