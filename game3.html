@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Hunt</title>
+    <script src="shared.js"></script>
+    <style>
+        .grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 2px; margin: 10px 0; }
+        .cell { width: 40px; height: 40px; border: 1px solid #000; display: flex; justify-content: center; align-items: center; }
+        .found { background-color: lightgreen; }
+    </style>
+</head>
+<body>
+    <h1>Word Hunt</h1>
+    <div id="game-container"></div>
+    
+    <script>
+        const wordSets = [
+            {
+                words: ['cat', 'dog', 'fish'],
+                grid: [
+                    ['c', 'a', 't', 'x', 'y'],
+                    ['d', 'o', 'g', 'z', 'w'],
+                    ['f', 'i', 's', 'h', 'v'],
+                    ['q', 'r', 'u', 'b', 'm'],
+                    ['p', 'l', 'k', 'j', 'e']
+                ]
+            },
+            {
+                words: ['sun', 'moon', 'star'],
+                grid: [
+                    ['s', 'u', 'n', 'x', 'y'],
+                    ['a', 'm', 'o', 'o', 'n'],
+                    ['s', 't', 'a', 'r', 'z'],
+                    ['b', 'c', 'd', 'e', 'f'],
+                    ['g', 'h', 'i', 'j', 'k']
+                ]
+            }
+        ];
+        
+        let currentGame;
+        let foundWords = [];
+        let startTime;
+        
+        function newGame() {
+            currentGame = wordSets[Math.floor(Math.random() * wordSets.length)];
+            foundWords = [];
+            startTime = Date.now();
+            renderGame();
+        }
+        
+        function renderGame() {
+            let html = `
+                <p>Find these words: ${currentGame.words.join(', ')}</p>
+                <div class="grid" id="letter-grid">
+            `;
+            
+            currentGame.grid.forEach((row, rowIndex) => {
+                row.forEach((letter, colIndex) => {
+                    const isFound = foundWords.some(word => 
+                        word.cells.some(cell => cell.row === rowIndex && cell.col === colIndex)
+                    );
+                    html += `<div class="cell ${isFound ? 'found' : ''}" 
+                                data-row="${rowIndex}" data-col="${colIndex}"
+                                onclick="selectCell(this)">
+                                ${letter}
+                            </div>`;
+                });
+            });
+            
+            html += `</div>
+                <p>Selected letters: <span id="selected-letters"></span></p>
+                <button onclick="checkWord()">Check Word</button>
+                <p id="result"></p>
+                <p>Found words: ${foundWords.map(w => w.word).join(', ') || 'None'}</p>
+            `;
+            
+            document.getElementById('game-container').innerHTML = html;
+            document.getElementById('selected-letters').textContent = '';
+        }
+        
+        let selectedCells = [];
+        
+        function selectCell(cell) {
+            const row = parseInt(cell.getAttribute('data-row'));
+            const col = parseInt(cell.getAttribute('data-col'));
+            
+            // Check if adjacent to last selected cell
+            if (selectedCells.length > 0) {
+                const last = selectedCells[selectedCells.length - 1];
+                if (Math.abs(row - last.row) > 1 || Math.abs(col - last.col) > 1) {
+                    alert('Please select adjacent letters!');
+                    return;
+                }
+            }
+            
+            // Toggle selection
+            const index = selectedCells.findIndex(c => c.row === row && c.col === col);
+            if (index >= 0) {
+                selectedCells.splice(index, 1);
+                cell.style.backgroundColor = '';
+            } else {
+                selectedCells.push({ row, col, letter: cell.textContent });
+                cell.style.backgroundColor = 'lightblue';
+            }
+            
+            document.getElementById('selected-letters').textContent = 
+                selectedCells.map(c => c.letter).join('');
+        }
+        
+        function checkWord() {
+            if (selectedCells.length === 0) return;
+            
+            const word = selectedCells.map(c => c.letter).join('').toLowerCase();
+            const isWord = currentGame.words.includes(word);
+            const alreadyFound = foundWords.some(w => w.word === word);
+            
+            if (isWord && !alreadyFound) {
+                foundWords.push({
+                    word,
+                    cells: [...selectedCells]
+                });
+                document.getElementById('result').textContent = `✅ Found "${word}"!`;
+                
+                if (foundWords.length === currentGame.words.length) {
+                    const timeSpent = (Date.now() - startTime) / 1000;
+                    const score = Math.max(10, 500 - Math.floor(timeSpent));
+                    
+                    saveGameResult('game3', {
+                        isCorrect: true,
+                        score,
+                        timeSpent: timeSpent,
+                        words: currentGame.words,
+                        foundWords: foundWords.map(w => w.word),
+                        grid: currentGame.grid
+                    });
+                    
+                    setTimeout(newGame, 2000);
+                }
+            } else if (alreadyFound) {
+                document.getElementById('result').textContent = `⚠️ You already found "${word}"`;
+            } else {
+                document.getElementById('result').textContent = `❌ "${word}" is not in the list`;
+            }
+            
+            selectedCells = [];
+            renderGame();
+        }
+        
+        window.onload = newGame;
+    </script>
+</body>
+</html>
