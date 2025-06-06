@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spelling Bee</title>
+    <script src="shared.js"></script>
+</head>
+<body>
+    <h1>Spelling Bee</h1>
+    <div id="game-container"></div>
+    
+    <script>
+        const words = [
+            { word: 'apple', audio: 'https://www.myinstants.com/media/sounds/apple.mp3' },
+            { word: 'banana', audio: 'https://www.myinstants.com/media/sounds/banana.mp3' },
+            { word: 'orange', audio: 'https://www.myinstants.com/media/sounds/orange.mp3' },
+            { word: 'giraffe', audio: 'https://www.myinstants.com/media/sounds/giraffe.mp3' },
+            { word: 'elephant', audio: 'https://www.myinstants.com/media/sounds/elephant.mp3' }
+        ];
+        
+        let currentWord;
+        let startTime;
+        let audio;
+        
+        function newGame() {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            startTime = Date.now();
+            
+            document.getElementById('game-container').innerHTML = `
+                <p>Listen to the word and spell it:</p>
+                <button onclick="playWord()">Play Word</button>
+                <p><input type="text" id="word-input" placeholder="Type the word here"></p>
+                <button onclick="checkAnswer()">Submit</button>
+                <p id="result"></p>
+            `;
+            
+            // Create audio element (won't play until user interaction)
+            if (audio) audio.remove();
+            audio = new Audio(currentWord.audio);
+        }
+        
+        function playWord() {
+            audio.play().catch(e => {
+                // Fallback if audio fails
+                document.getElementById('result').textContent = 
+                    `The word is "${currentWord.word.replace(/./g, '_ ')}" (audio failed)`;
+            });
+        }
+        
+        function checkAnswer() {
+            const userInput = document.getElementById('word-input').value.toLowerCase();
+            const isCorrect = userInput === currentWord.word;
+            const timeSpent = (Date.now() - startTime) / 1000;
+            const score = isCorrect ? Math.max(10, 100 - Math.floor(timeSpent)) : 0;
+            
+            document.getElementById('result').innerHTML = isCorrect 
+                ? `✅ Correct!` 
+                : `❌ Incorrect. The word was "${currentWord.word}"`;
+            
+            saveGameResult('game5', {
+                isCorrect,
+                score,
+                timeSpent,
+                correctWord: currentWord.word,
+                userAnswer: userInput,
+                audioUsed: currentWord.audio
+            });
+            
+            setTimeout(newGame, 2000);
+        }
+        
+        window.onload = newGame;
+    </script>
+</body>
+</html>
