@@ -1,177 +1,609 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Word Hunt</title>
-    <script src="shared.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Search</title>
     <style>
-        .grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 2px; margin: 10px 0; }
-        .cell { width: 40px; height: 40px; border: 1px solid #000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .selected { background-color: lightblue; }
-        .found { background-color: lightgreen; }
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .score-display {
+            font-size: 20px;
+            color: #2c3e50;
+        }
+        
+        .timer {
+            font-size: 20px;
+            color: #e74c3c;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+            touch-action: none; /* Important for mobile dragging */
+        }
+        
+        .letter-cell {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ecf0f1;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        
+        .letter-cell.selected {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .letter-cell.found {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .word-list {
+            min-width: 200px;
+        }
+        
+        .word-list h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .word-item {
+            margin: 5px 0;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .word-text {
+            flex-grow: 1;
+        }
+        
+        .word-item.found {
+            color: #2ecc71;
+            text-decoration: line-through;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .message {
+            text-align: center;
+            margin: 10px 0;
+            min-height: 24px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .success {
+            color: #2ecc71;
+        }
+        
+        .instructions {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
-    <h1>Word Hunt</h1>
-    <div id="game-container"></div>
-    
-    <script>
-        const wordSets = [
-            {
-                words: ['cat', 'dog', 'fish'],
-                grid: [
-                    ['c', 'a', 't', 'x', 'y'],
-                    ['d', 'o', 'g', 'z', 'w'],
-                    ['f', 'i', 's', 'h', 'v'],
-                    ['q', 'r', 'u', 'b', 'm'],
-                    ['p', 'l', 'k', 'j', 'e']
-                ]
-            },
-            {
-                words: ['sun', 'moon', 'star'],
-                grid: [
-                    ['s', 'u', 'n', 'x', 'y'],
-                    ['a', 'm', 'o', 'o', 'n'],
-                    ['s', 't', 'a', 'r', 'z'],
-                    ['b', 'c', 'd', 'e', 'f'],
-                    ['g', 'h', 'i', 'j', 'k']
-                ]
-            }
-        ];
+    <div class="game-container">
+        <h1>Word Search</h1>
         
-        let currentGame;
+        <div class="instructions">
+            Click and drag to select words. Words can be in any direction.
+        </div>
+        
+        <div class="game-info">
+            <div class="score-display">Found: <span id="found-count">0</span>/<span id="total-words">0</span></div>
+            <div class="timer">Time: <span id="timer">5:00</span></div>
+        </div>
+        
+        <div class="game-area">
+            <div class="word-grid" id="word-grid"></div>
+            
+            <div class="word-list">
+                <h3>Words to Find:</h3>
+                <div id="words-to-find"></div>
+            </div>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="controls">
+            <button id="hint-button">Hint</button>
+            <button id="new-game">New Game</button>
+        </div>
+    </div>
+    <div style="text-align: center; color: black;">
+        <a href="/dashboard" style="text-align: center; color: black;">Back to Dashboard</a>
+    </div>
+
+    <script>
+        // Game variables
+        let grid = [];
+        let words = [];
         let foundWords = [];
         let selectedCells = [];
-        let startTime;
+        let isMouseDown = false;
+        let startCell = null;
+        let timeLeft = 300; // 5 minutes in seconds
+        let timerInterval;
+        let gameActive = false;
         
-        function newGame() {
-            currentGame = wordSets[Math.floor(Math.random() * wordSets.length)];
+        // DOM elements
+        const wordGrid = document.getElementById('word-grid');
+        const wordsToFindContainer = document.getElementById('words-to-find');
+        const foundCountDisplay = document.getElementById('found-count');
+        const totalWordsDisplay = document.getElementById('total-words');
+        const timerDisplay = document.getElementById('timer');
+        const messageDisplay = document.getElementById('message');
+        const hintButton = document.getElementById('hint-button');
+        const newGameBtn = document.getElementById('new-game');
+        
+        // Word lists by difficulty
+        const wordLists = {
+            easy: [
+                "APPLE", "BANANA", "CHERRY", "GRAPE", "LEMON", 
+                "MANGO", "ORANGE", "PEACH", "PEAR", "PLUM"
+            ],
+            medium: [
+                "ELEPHANT", "GIRAFFE", "KANGAROO", "LEOPARD", "LION", 
+                "MONKEY", "PANDA", "RHINO", "TIGER", "ZEBRA"
+            ],
+            hard: [
+                "ASTONISHING", "BEAUTIFULLY", "CHALLENGER", "DETERMINED", 
+                "EXTRAORDINARY", "FANTASTIC", "GRADUATION", "HAPPINESS", 
+                "IMAGINATION", "JUBILATION"
+            ]
+        };
+        
+        // Initialize the game
+        function initGame(difficulty = "medium") {
+            // Reset game state
+            grid = [];
+            words = [...wordLists[difficulty]];
             foundWords = [];
             selectedCells = [];
-            startTime = Date.now();
-            renderGame();
+            timeLeft = 300;
+            gameActive = true;
+            
+            // Update UI
+            updateWordList();
+            foundCountDisplay.textContent = '0';
+            totalWordsDisplay.textContent = words.length;
+            messageDisplay.textContent = '';
+            messageDisplay.className = 'message';
+            
+            // Start timer
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Generate grid
+            generateGrid();
+            renderGrid();
         }
         
-        function renderGame() {
-            let html = `
-                <p>Find these words: ${currentGame.words.join(', ')}</p>
-                <div class="grid" id="letter-grid">
-            `;
+        // Generate the word search grid
+        function generateGrid() {
+            const size = 10;
+            // Initialize empty grid
+            grid = Array(size).fill().map(() => Array(size).fill(''));
             
-            currentGame.grid.forEach((row, rowIndex) => {
-                row.forEach((letter, colIndex) => {
-                    const isFound = foundWords.some(word => 
-                        word.cells.some(cell => cell.row === rowIndex && cell.col === colIndex)
-                    );
-                    const isSelected = selectedCells.some(cell => cell.row === rowIndex && cell.col === colIndex);
+            // Place words
+            for (const word of words) {
+                placeWord(word);
+            }
+            
+            // Fill remaining spaces with random letters
+            fillEmptySpaces();
+        }
+        
+        // Place a word in the grid
+        function placeWord(word) {
+            const directions = [
+                { dr: 0, dc: 1 },   // Horizontal
+                { dr: 1, dc: 0 },    // Vertical
+                { dr: 1, dc: 1 },    // Diagonal down-right
+                { dr: 1, dc: -1 },   // Diagonal down-left
+                { dr: -1, dc: 1 },   // Diagonal up-right
+                { dr: -1, dc: -1 }   // Diagonal up-left
+            ];
+            
+            let placed = false;
+            let attempts = 0;
+            const maxAttempts = 100;
+            
+            while (!placed && attempts < maxAttempts) {
+                attempts++;
+                
+                // Choose random direction
+                const dir = directions[Math.floor(Math.random() * directions.length)];
+                
+                // Choose random starting position
+                let row = Math.floor(Math.random() * grid.length);
+                let col = Math.floor(Math.random() * grid[0].length);
+                
+                // Check if word fits
+                let fits = true;
+                for (let i = 0; i < word.length; i++) {
+                    const newRow = row + i * dir.dr;
+                    const newCol = col + i * dir.dc;
                     
-                    html += `<div class="cell ${isFound ? 'found' : ''} ${isSelected ? 'selected' : ''}" 
-                                data-row="${rowIndex}" data-col="${colIndex}"
-                                onclick="selectCell(this, ${rowIndex}, ${colIndex})">
-                                ${letter}
-                            </div>`;
-                });
+                    if (
+                        newRow < 0 || newRow >= grid.length || 
+                        newCol < 0 || newCol >= grid[0].length ||
+                        (grid[newRow][newCol] !== '' && grid[newRow][newCol] !== word[i])
+                    ) {
+                        fits = false;
+                        break;
+                    }
+                }
+                
+                // Place word if it fits
+                if (fits) {
+                    for (let i = 0; i < word.length; i++) {
+                        const newRow = row + i * dir.dr;
+                        const newCol = col + i * dir.dc;
+                        grid[newRow][newCol] = word[i];
+                    }
+                    placed = true;
+                }
+            }
+        }
+        
+        // Fill empty spaces in the grid with random letters
+        function fillEmptySpaces() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    if (grid[row][col] === '') {
+                        grid[row][col] = letters[Math.floor(Math.random() * letters.length)];
+                    }
+                }
+            }
+        }
+        
+        // Render the grid
+        function renderGrid() {
+            wordGrid.innerHTML = '';
+            for (let row = 0; row < grid.length; row++) {
+                for (let col = 0; col < grid[row].length; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'letter-cell';
+                    cell.textContent = grid[row][col];
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Mouse event listeners for selecting cells
+                    cell.addEventListener('mousedown', handleMouseDown);
+                    cell.addEventListener('touchstart', handleMouseDown);
+                    cell.addEventListener('mouseenter', handleMouseEnter);
+                    cell.addEventListener('touchmove', handleTouchMove);
+                    cell.addEventListener('mouseup', handleMouseUp);
+                    cell.addEventListener('touchend', handleMouseUp);
+                    
+                    wordGrid.appendChild(cell);
+                }
+            }
+        }
+        
+        // Update the word list display
+        function updateWordList() {
+            wordsToFindContainer.innerHTML = '';
+            words.forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = `word-item ${foundWords.includes(word) ? 'found' : ''}`;
+                wordItem.innerHTML = `
+                    <div class="word-text">${word}</div>
+                `;
+                wordsToFindContainer.appendChild(wordItem);
             });
-            
-            html += `</div>
-                <p>Selected letters: <span id="selected-letters">${getSelectedLetters()}</span></p>
-                <button onclick="checkWord()">Check Word</button>
-                <p id="result"></p>
-                <p>Found words: ${foundWords.map(w => w.word).join(', ') || 'None'}</p>
-            `;
-            
-            document.getElementById('game-container').innerHTML = html;
         }
         
-        function selectCell(element, row, col) {
-            // If no cells selected yet, just select this one
-            if (selectedCells.length === 0) {
-                selectedCells.push({ row, col, letter: element.textContent });
-                element.classList.add('selected');
-                updateSelectedLetters();
+        // Handle mouse down on a cell
+        function handleMouseDown(e) {
+            if (!gameActive) return;
+            
+            e.preventDefault();
+            isMouseDown = true;
+            const cell = e.target.closest('.letter-cell');
+            if (!cell) return;
+            
+            startCell = cell;
+            selectedCells = [cell];
+            cell.classList.add('selected');
+        }
+        
+        // Handle touch move
+        function handleTouchMove(e) {
+            if (!isMouseDown) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            const cell = element?.closest('.letter-cell');
+            if (cell) handleMouseEnter({ target: cell });
+        }
+        
+        // Handle mouse entering a cell while selecting
+        function handleMouseEnter(e) {
+            if (!isMouseDown || !startCell) return;
+            
+            const currentCell = e.target.closest('.letter-cell');
+            if (!currentCell || selectedCells.includes(currentCell)) return;
+            
+            // Get coordinates
+            const startRow = parseInt(startCell.dataset.row);
+            const startCol = parseInt(startCell.dataset.col);
+            const currentRow = parseInt(currentCell.dataset.row);
+            const currentCol = parseInt(currentCell.dataset.col);
+            
+            // Calculate direction
+            const dr = currentRow - startRow;
+            const dc = currentCol - startCol;
+            
+            // Determine if this is a valid straight line or diagonal
+            const isStraight = (dr === 0 || dc === 0);
+            const isDiagonal = (Math.abs(dr) === Math.abs(dc));
+            
+            if (!isStraight && !isDiagonal) return;
+            
+            // Calculate step direction
+            const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+            const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+            
+            // Clear previous selection (except the starting cell)
+            document.querySelectorAll('.letter-cell.selected').forEach(c => {
+                if (c !== startCell) c.classList.remove('selected');
+            });
+            selectedCells = [startCell];
+            
+            // Select all cells in the line
+            let r = startRow;
+            let c = startCol;
+            while (true) {
+                const cell = document.querySelector(`.letter-cell[data-row="${r}"][data-col="${c}"]`);
+                if (!cell) break;
+                
+                cell.classList.add('selected');
+                selectedCells.push(cell);
+                
+                if (r === currentRow && c === currentCol) break;
+                r += stepR;
+                c += stepC;
+            }
+        }
+        
+        // Handle mouse up (end selection)
+        function handleMouseUp() {
+            if (!isMouseDown || !startCell) return;
+            
+            isMouseDown = false;
+            checkSelectedWord();
+            startCell = null;
+        }
+        
+        // Check if selected cells form a valid word
+        function checkSelectedWord() {
+            if (selectedCells.length < 3) {
+                clearSelection();
                 return;
             }
             
-            // Check if this cell is adjacent to the last selected cell
-            const lastCell = selectedCells[selectedCells.length - 1];
-            const rowDiff = Math.abs(row - lastCell.row);
-            const colDiff = Math.abs(col - lastCell.col);
+            // Get the word from selected cells in correct order
+            const selectedWord = getSelectedWord();
             
-            if (rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0)) {
-                // Check if already selected (to allow unselecting)
-                const index = selectedCells.findIndex(c => c.row === row && c.col === col);
-                if (index >= 0) {
-                    selectedCells.splice(index, 1);
-                    element.classList.remove('selected');
-                } else {
-                    selectedCells.push({ row, col, letter: element.textContent });
-                    element.classList.add('selected');
-                }
-                updateSelectedLetters();
-            } else {
-                alert('Please select adjacent letters!');
-            }
-        }
-        
-        function getSelectedLetters() {
-            return selectedCells.map(c => c.letter).join('');
-        }
-        
-        function updateSelectedLetters() {
-            const display = document.getElementById('selected-letters');
-            if (display) display.textContent = getSelectedLetters();
-        }
-        
-        function checkWord() {
-            if (selectedCells.length === 0) {
-                document.getElementById('result').textContent = 'Please select some letters first!';
-                return;
-            }
-        
-            const word = getSelectedLetters().toLowerCase();
-            const isWord = currentGame.words.includes(word);
-            const alreadyFound = foundWords.some(w => w.word === word);
-        
-            // Debugging logs
-            console.log("Selected Letters:", word);
-            console.log("Is Word Valid:", isWord);
-            console.log("Already Found:", alreadyFound);
-        
-            if (isWord && !alreadyFound) {
-                foundWords.push({
-                    word,
-                    cells: [...selectedCells]
+            // Check both forward and reverse directions
+            if ((words.includes(selectedWord) && !foundWords.includes(selectedWord)) ||
+                (words.includes(reverseString(selectedWord)) && !foundWords.includes(reverseString(selectedWord)))) {
+                
+                // Determine which version of the word was found
+                const foundWord = words.includes(selectedWord) ? selectedWord : reverseString(selectedWord);
+                
+                // Valid word found
+                foundWords.push(foundWord);
+                selectedCells.forEach(cell => {
+                    cell.classList.remove('selected');
+                    cell.classList.add('found');
                 });
-                document.getElementById('result').textContent = `✅ Found "${word}"!`;
-        
-                // Clear selection
-                selectedCells = [];
-                updateSelectedLetters();
-        
-                if (foundWords.length === currentGame.words.length) {
-                    const timeSpent = (Date.now() - startTime) / 1000;
-                    const score = Math.max(10, 500 - Math.floor(timeSpent));
-        
-                    saveGameResult('game3', {
-                        isCorrect: true,
-                        score,
-                        timeSpent,
-                        words: currentGame.words,
-                        foundWords: foundWords.map(w => w.word),
-                        grid: currentGame.grid
-                    });
-        
-                    setTimeout(newGame, 2000);
+                
+                // Update UI
+                updateWordList();
+                foundCountDisplay.textContent = foundWords.length;
+                showMessage(`Found: ${foundWord}`, "success");
+                
+                // Check if all words found
+                if (foundWords.length === words.length) {
+                    endGame("Congratulations! You found all the words!");
                 }
-            } else if (alreadyFound) {
-                document.getElementById('result').textContent = `⚠️ You already found "${word}"`;
             } else {
-                document.getElementById('result').textContent = `❌ "${word}" is not in the list`;
+                // Invalid selection
+                showMessage("Not a valid word");
             }
-        
-            renderGame(); // This ensures the game state is updated
+            
+            clearSelection();
+        }
+
+        // Get the selected word in correct order from start to end cell
+        function getSelectedWord() {
+            if (selectedCells.length < 2) return '';
+            
+            const startCell = selectedCells[0];
+            const endCell = selectedCells[selectedCells.length - 1];
+            const startRow = parseInt(startCell.dataset.row);
+            const startCol = parseInt(startCell.dataset.col);
+            const endRow = parseInt(endCell.dataset.row);
+            const endCol = parseInt(endCell.dataset.col);
+            
+            // Calculate direction
+            const dr = endRow - startRow;
+            const dc = endCol - startCol;
+            
+            // Normalize direction
+            const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+            const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+            
+            // Build the word by following the path
+            let word = '';
+            let r = startRow;
+            let c = startCol;
+            
+            while (true) {
+                const cell = document.querySelector(`.letter-cell[data-row="${r}"][data-col="${c}"]`);
+                if (!cell) break;
+                
+                word += cell.textContent;
+                
+                if (r === endRow && c === endCol) break;
+                r += stepR;
+                c += stepC;
+            }
+            
+            return word;
+        }
+
+        // Helper function to reverse a string
+        function reverseString(str) {
+            return str.split('').reverse().join('');
         }
         
-        window.onload = newGame;
+        // Clear current selection
+        function clearSelection() {
+            document.querySelectorAll('.letter-cell.selected').forEach(cell => {
+                cell.classList.remove('selected');
+            });
+            selectedCells = [];
+        }
+        
+        // Provide a hint
+        function giveHint() {
+            if (!gameActive) return;
+            
+            // Find a word that hasn't been found yet
+            const remainingWords = words.filter(word => !foundWords.includes(word));
+            if (remainingWords.length === 0) return;
+            
+            const hintWord = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            showMessage(`Hint: Try finding "${hintWord}"`);
+        }
+        
+        // Update the timer
+        function updateTimer() {
+            if (!gameActive) return;
+            
+            timeLeft--;
+            updateTimerDisplay();
+            
+            if (timeLeft <= 0) {
+                endGame("Time's up! Game over!");
+            }
+        }
+        
+        // Update the timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Show a message
+        function showMessage(msg, type = "") {
+            messageDisplay.textContent = msg;
+            messageDisplay.className = `message ${type}`;
+            setTimeout(() => {
+                if (messageDisplay.textContent === msg) {
+                    messageDisplay.textContent = '';
+                    messageDisplay.className = 'message';
+                }
+            }, 3000);
+        }
+        
+        // End the game
+        function endGame(message) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            showMessage(message);
+        }
+        
+        // Event listeners
+        hintButton.addEventListener('click', giveHint);
+        newGameBtn.addEventListener('click', () => initGame("medium"));
+        
+        // Prevent touch scrolling while playing
+        document.addEventListener('touchmove', (e) => {
+            if (isMouseDown) e.preventDefault();
+        }, { passive: false });
+        
+        // Start the game
+        initGame();
     </script>
 </body>
 </html>
