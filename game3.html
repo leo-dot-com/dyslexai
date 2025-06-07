@@ -3,174 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Search</title>
+    <title>Word Hunt | DyslexAI</title>
     <style>
+        :root {
+            --primary: #3a7bd5;
+            --primary-light: #e3f2fd;
+            --secondary: #00d2ff;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4caf50;
+            --warning: #ff9800;
+        }
+
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://dyslexicfonts.com/fonts/OpenDyslexic-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        
+
         h1 {
-            color: #2c3e50;
+            color: var(--primary);
             text-align: center;
-            margin-bottom: 30px;
+            margin: 30px 0;
+            font-size: 2.2rem;
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 15px;
         }
-        
+
         .game-container {
             background-color: white;
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            flex-grow: 1;
         }
-        
+
         .game-info {
             display: flex;
             justify-content: space-between;
-            width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
-        
-        .score-display {
-            font-size: 20px;
-            color: #2c3e50;
+
+        .timer, .score {
+            background-color: var(--primary-light);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.1rem;
         }
-        
-        .timer {
-            font-size: 20px;
-            color: #e74c3c;
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            color: var(--dark);
         }
-        
+
         .game-area {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             gap: 30px;
-            margin-bottom: 20px;
         }
-        
+
+        @media (min-width: 768px) {
+            .game-area {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+            }
+        }
+
         .word-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            gap: 2px;
+            gap: 4px;
             margin-bottom: 20px;
-            touch-action: none; /* Important for mobile dragging */
+            touch-action: none;
         }
-        
+
         .letter-cell {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #ecf0f1;
-            font-size: 18px;
+            background-color: var(--primary-light);
+            font-size: 1.4rem;
             font-weight: bold;
+            color: var(--dark);
+            border-radius: 5px;
             cursor: pointer;
             user-select: none;
             transition: all 0.2s;
         }
-        
+
         .letter-cell.selected {
-            background-color: #3498db;
+            background-color: var(--secondary);
             color: white;
+            transform: scale(1.05);
         }
-        
+
         .letter-cell.found {
-            background-color: #2ecc71;
+            background-color: var(--success);
             color: white;
         }
-        
-        .word-list {
+
+        .word-list-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             min-width: 200px;
         }
-        
-        .word-list h3 {
-            margin-bottom: 10px;
-            color: #2c3e50;
+
+        .word-list-title {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
         }
-        
+
         .word-item {
-            margin: 5px 0;
-            padding: 5px;
+            margin: 12px 0;
+            padding: 8px;
             display: flex;
             align-items: center;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
         }
-        
+
+        .word-item:hover {
+            background-color: var(--primary-light);
+        }
+
         .word-text {
             flex-grow: 1;
         }
-        
+
         .word-item.found {
-            color: #2ecc71;
+            color: var(--success);
             text-decoration: line-through;
+            opacity: 0.7;
         }
-        
+
         .controls {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
         }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            border: none;
+            min-width: 120px;
         }
-        
-        button:hover {
-            background-color: #2980b9;
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
         }
-        
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-light);
+        }
+
         .message {
             text-align: center;
-            margin: 10px 0;
+            margin: 20px 0;
             min-height: 24px;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 1.2rem;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
-        
+
         .success {
-            color: #2ecc71;
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            border: 2px solid var(--success);
         }
-        
-        .instructions {
-            margin-bottom: 20px;
+
+        .error {
+            background-color: rgba(255, 107, 107, 0.1);
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
             text-align: center;
-            color: #7f8c8d;
+        }
+
+        .dashboard-link:hover {
+            background-color: var(--secondary);
+        }
+
+        @media (max-width: 600px) {
+            .letter-cell {
+                width: 28px;
+                height: 28px;
+                font-size: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+                min-width: 100px;
+            }
         }
     </style>
 </head>
 <body>
+    <h1>Word Hunt Challenge</h1>
+    
     <div class="game-container">
-        <h1>Word Search</h1>
+        <div class="game-info">
+            <div class="score">Found: <span id="found-count">0</span>/<span id="total-words">0</span></div>
+            <div class="timer">Time: <span id="timer">5:00</span></div>
+        </div>
         
         <div class="instructions">
             Click and drag to select words. Words can be in any direction.
         </div>
         
-        <div class="game-info">
-            <div class="score-display">Found: <span id="found-count">0</span>/<span id="total-words">0</span></div>
-            <div class="timer">Time: <span id="timer">5:00</span></div>
-        </div>
-        
         <div class="game-area">
             <div class="word-grid" id="word-grid"></div>
             
-            <div class="word-list">
-                <h3>Words to Find:</h3>
+            <div class="word-list-container">
+                <div class="word-list-title">Words to Find</div>
                 <div id="words-to-find"></div>
             </div>
         </div>
@@ -178,12 +292,11 @@
         <div class="message" id="message"></div>
         
         <div class="controls">
-            <button id="hint-button">Hint</button>
-            <button id="new-game">New Game</button>
+            <button class="btn btn-secondary" id="hint-button">Hint</button>
+            <button class="btn btn-primary" id="new-game">New Game</button>
         </div>
-    </div>
-    <div style="text-align: center; color: black;">
-        <a href="/dashboard" style="text-align: center; color: black;">Back to Dashboard</a>
+        
+        <a href="dashboard.html" class="dashboard-link">Back to Dashboard</a>
     </div>
 
     <script>
