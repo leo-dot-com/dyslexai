@@ -217,7 +217,7 @@
                     <tr><th>Username</th><td>${user.username}</td></tr>
                     <tr><th>Total Games Played</th><td>${user.totalGames}</td></tr>
                     <tr><th>Total Score</th><td>${user.totalScore}</td></tr>
-                    <tr><th>Total Time Spent</th><td>${formatTime(user.totalTime)}</td></tr>
+                    <tr><th>Total Time Spent</th><td>${formatHours(user.totalTime)}</td></tr>
                     <tr><th>Overall Accuracy</th><td>${renderAccuracy(user.totalCorrect, user.totalAttempts)}</td></tr>
                 </table>
                 
@@ -314,10 +314,18 @@
         }
         
         function formatTime(seconds) {
-            if (seconds < 60) return `${seconds} sec`;
+            if (seconds < 60) return `${Math.floor(seconds)} sec`;
             const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
+            const remainingSeconds = Math.floor(seconds % 60);
             return `${minutes} min ${remainingSeconds} sec`;
+        }
+
+        function formatHours(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            // Return formatted string
+            return `${hours} hours ${minutes} minutes`;
         }
         
         function formatTimestamp(timestamp) {
