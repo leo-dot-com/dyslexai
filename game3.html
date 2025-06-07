@@ -126,26 +126,31 @@
                 document.getElementById('result').textContent = 'Please select some letters first!';
                 return;
             }
-            
+        
             const word = getSelectedLetters().toLowerCase();
             const isWord = currentGame.words.includes(word);
             const alreadyFound = foundWords.some(w => w.word === word);
-            
+        
+            // Debugging logs
+            console.log("Selected Letters:", word);
+            console.log("Is Word Valid:", isWord);
+            console.log("Already Found:", alreadyFound);
+        
             if (isWord && !alreadyFound) {
                 foundWords.push({
                     word,
                     cells: [...selectedCells]
                 });
                 document.getElementById('result').textContent = `✅ Found "${word}"!`;
-                
+        
                 // Clear selection
                 selectedCells = [];
                 updateSelectedLetters();
-                
+        
                 if (foundWords.length === currentGame.words.length) {
                     const timeSpent = (Date.now() - startTime) / 1000;
                     const score = Math.max(10, 500 - Math.floor(timeSpent));
-                    
+        
                     saveGameResult('game3', {
                         isCorrect: true,
                         score,
@@ -154,7 +159,7 @@
                         foundWords: foundWords.map(w => w.word),
                         grid: currentGame.grid
                     });
-                    
+        
                     setTimeout(newGame, 2000);
                 }
             } else if (alreadyFound) {
@@ -162,8 +167,8 @@
             } else {
                 document.getElementById('result').textContent = `❌ "${word}" is not in the list`;
             }
-            
-            renderGame();
+        
+            renderGame(); // This ensures the game state is updated
         }
         
         window.onload = newGame;
