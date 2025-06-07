@@ -1,45 +1,320 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Knoword Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knoword Game | DyslexAI</title>
     <script src="shared.js"></script>
+    <style>
+        :root {
+            --primary: #3a7bd5;
+            --primary-light: #e3f2fd;
+            --secondary: #00d2ff;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4caf50;
+            --warning: #ff9800;
+        }
+
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://dyslexicfonts.com/fonts/OpenDyslexic-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2.2rem;
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 15px;
+        }
+
+        #game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .definition-card {
+            background-color: var(--primary-light);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .definition-text {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            color: var(--dark);
+        }
+
+        .input-container {
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .word-input {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            font-size: 1.5rem;
+            padding: 12px 20px;
+            width: 80%;
+            max-width: 400px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .word-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.3);
+        }
+
+        .submit-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 15px auto;
+            display: block;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3rem;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .correct {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .incorrect {
+            background-color: rgba(255, 107, 107, 0.1);
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .correct-answer {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+
+        .timer-score-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .timer, .score {
+            background-color: var(--primary-light);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            font-size: 1rem;
+            margin: 15px auto;
+            display: block;
+        }
+
+        .hint-text {
+            margin: 10px 0;
+            font-style: italic;
+            color: #666;
+            text-align: center;
+        }
+
+        .first-letter-hint {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .definition-text {
+                font-size: 1.2rem;
+            }
+            
+            .word-input {
+                font-size: 1.2rem;
+                width: 90%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Knoword</h1>
-    <div id="game-container"></div>
+    <h1>Knoword Challenge</h1>
+    <div id="game-container">
+        <div class="timer-score-container">
+            <div class="timer" id="timer">Time: 0s</div>
+            <div class="score" id="score">Score: 0</div>
+        </div>
+    </div>
     
     <script>
         const wordDefinitions = [
-            { word: 'apple', definition: 'A common fruit that grows on trees' },
-            { word: 'library', definition: 'A place where books are kept for reading' },
-            { word: 'bicycle', definition: 'A two-wheeled vehicle powered by pedals' },
-            { word: 'ocean', definition: 'A very large expanse of sea' },
-            { word: 'mountain', definition: 'A large natural elevation of the earth\'s surface' }
+            { word: 'apple', definition: 'A common fruit that grows on trees', hint: 'Comes in red, green, and yellow varieties' },
+            { word: 'library', definition: 'A place where books are kept for reading', hint: 'You can borrow items here for free' },
+            { word: 'bicycle', definition: 'A two-wheeled vehicle powered by pedals', hint: 'Has handlebars and a chain' },
+            { word: 'ocean', definition: 'A very large expanse of sea', hint: 'Covers most of Earth\'s surface' },
+            { word: 'mountain', definition: 'A large natural elevation of the earth\'s surface', hint: 'Some have snow on top year-round' }
         ];
         
         let currentWord;
         let startTime;
+        let timerInterval;
+        let totalScore = 0;
+        let hintUsed = false;
         
         function newGame() {
+            // Clear previous timer if exists
+            if (timerInterval) clearInterval(timerInterval);
+            
             currentWord = wordDefinitions[Math.floor(Math.random() * wordDefinitions.length)];
+            hintUsed = false;
+            
             document.getElementById('game-container').innerHTML = `
-                <p>Definition: ${currentWord.definition}</p>
-                <p>What is the word? <input type="text" id="word-input"></p>
-                <button onclick="checkAnswer()">Submit</button>
-                <p id="result"></p>
+                <div class="timer-score-container">
+                    <div class="timer" id="timer">Time: 0s</div>
+                    <div class="score" id="score">Score: ${totalScore}</div>
+                </div>
+                
+                <div class="definition-card">
+                    <div class="definition-text">${currentWord.definition}</div>
+                </div>
+                
+                <div class="input-container">
+                    <p>What word matches this definition?</p>
+                    <input type="text" id="word-input" class="word-input" autofocus placeholder="Type your answer...">
+                </div>
+                
+                <button class="submit-btn" onclick="checkAnswer()">Submit Answer</button>
+                
+                <button class="hint-btn" onclick="showHint()">Need a hint?</button>
+                <div class="hint-text" id="hint-text" style="display:none">${currentWord.hint}</div>
+                <div class="first-letter-hint" id="first-letter-hint" style="display:none"></div>
+                
+                <div id="result"></div>
             `;
+            
             startTime = Date.now();
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Focus the input field
+            document.getElementById('word-input').focus();
+            
+            // Allow submission on Enter key
+            document.getElementById('word-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+        }
+        
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('timer').textContent = `Time: ${elapsed}s`;
+        }
+        
+        function showHint() {
+            hintUsed = true;
+            document.getElementById('hint-text').style.display = 'block';
+            document.getElementById('first-letter-hint').style.display = 'block';
+            document.getElementById('first-letter-hint').textContent = `Starts with: ${currentWord.word.charAt(0).toUpperCase()}`;
         }
         
         function checkAnswer() {
-            const userInput = document.getElementById('word-input').value.toLowerCase();
+            clearInterval(timerInterval);
+            const userInput = document.getElementById('word-input').value.toLowerCase().trim();
             const isCorrect = userInput === currentWord.word;
             const timeSpent = (Date.now() - startTime) / 1000;
-            const score = isCorrect ? Math.max(10, 100 - Math.floor(timeSpent)) : 0;
             
-            document.getElementById('result').innerHTML = isCorrect 
-                ? `✅ Correct!` 
-                : `❌ Incorrect. The word was "${currentWord.word}"`;
+            // Calculate score (penalize for using hints)
+            let score = isCorrect ? Math.max(10, 150 - Math.floor(timeSpent)) : 0;
+            if (hintUsed && isCorrect) score = Math.floor(score * 0.7); // 30% penalty for using hints
+            
+            if (isCorrect) totalScore += score;
+            
+            const resultElement = document.getElementById('result');
+            resultElement.className = isCorrect ? 'correct' : 'incorrect';
+            
+            if (isCorrect) {
+                resultElement.innerHTML = `
+                    <div>✅ Correct!</div>
+                    <div class="score-display">+${score} points!</div>
+                `;
+            } else {
+                resultElement.innerHTML = `
+                    <div>❌ Incorrect</div>
+                    <div>The word was:</div>
+                    <div class="correct-answer">${currentWord.word}</div>
+                `;
+            }
+            
+            // Update score display immediately
+            document.getElementById('score').textContent = `Score: ${totalScore}`;
             
             saveGameResult('game2', {
                 isCorrect,
@@ -47,10 +322,11 @@
                 timeSpent,
                 definition: currentWord.definition,
                 correctAnswer: currentWord.word,
-                userAnswer: userInput
+                userAnswer: userInput,
+                hintUsed
             });
             
-            setTimeout(newGame, 2000);
+            setTimeout(newGame, 3000);
         }
         
         window.onload = newGame;
