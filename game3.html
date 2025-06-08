@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Hunt | DyslexAI</title>
+    <script src="shared.js"></script>
     <style>
         :root {
             --primary: #3a7bd5;
@@ -704,16 +705,62 @@
             gameActive = false;
             clearInterval(timerInterval);
             showMessage(message);
+            
+            // Calculate score based on words found and time remaining
+            const score = Math.floor((foundWords.length / words.length) * 100 + (timeLeft / 10));
+            const accuracy = foundWords.length / words.length;
+            
+            // Save game results
+            saveGameResult({
+                gameId: 'game3',
+                score: score,
+                isCorrect: foundWords.length === words.length,
+                timeSpent: 300 - timeLeft, // seconds
+                timestamp: Date.now()
+            });
         }
-        
-        // Event listeners
-        hintButton.addEventListener('click', giveHint);
-        newGameBtn.addEventListener('click', () => initGame("medium"));
-        
-        // Prevent touch scrolling while playing
-        document.addEventListener('touchmove', (e) => {
-            if (isMouseDown) e.preventDefault();
-        }, { passive: false });
+
+        // Save game results to user data
+        function saveGameResult(result) {
+            const user = getUserData();
+            
+            // Update game stats
+            if (!user.gameStats.game3) {
+                user.gameStats.game3 = {
+                    plays: 0,
+                    correct: 0,
+                    attempts: 0,
+                    avgTime: 0,
+                    bestScore: 0
+                };
+            }
+            
+            const stats = user.gameStats.game3;
+            stats.plays++;
+            stats.attempts += words.length;
+            stats.correct += foundWords.length;
+            
+            // Update average time
+            stats.avgTime = (stats.avgTime * (stats.plays - 1) + result.timeSpent) / stats.plays;
+            
+            // Update best score
+            if (result.score > stats.bestScore) {
+                stats.bestScore = result.score;
+            }
+            
+            // Update total stats
+            user.totalGames++;
+            user.totalScore += result.score;
+            user.totalTime += result.timeSpent;
+            user.totalAttempts += words.length;
+            user.totalCorrect += foundWords.length;
+            
+            // Add to history
+            user.history.push(result);
+            
+            // Save updated user data
+            saveUserData(user);
+        }
         
         // Start the game
         initGame();
