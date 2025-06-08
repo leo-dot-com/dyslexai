@@ -199,7 +199,9 @@
 <body>
     <div class="timer" id="timer">0s</div>
     <h1>Fill-in the Missing Letter</h1>
-    <div id="game-container"></div>
+    <div id="game-container">
+        <div id="loading-message">Loading game...</div>
+    </div>
     
     <script src="shared.js"></script>
     <script>
@@ -218,6 +220,8 @@
         function newGame() {
             // Clear previous timer if exists
             if (timerInterval) clearInterval(timerInterval);
+
+            gameContainer.innerHTML = '<div id="loading-message">Loading game...</div>';
             
             currentWord = words[Math.floor(Math.random() * words.length)];
             document.getElementById('game-container').innerHTML = `
