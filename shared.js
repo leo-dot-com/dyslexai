@@ -19,8 +19,7 @@ function getUserData() {
                 game2: { plays: 0, correct: 0, attempts: 0, avgTime: 0, bestScore: 0 },
                 game3: { plays: 0, correct: 0, attempts: 0, avgTime: 0, bestScore: 0 },
                 game4: { plays: 0, correct: 0, attempts: 0, avgTime: 0, bestScore: 0 },
-                game5: { plays: 0, correct: 0, attempts: 0, avgTime: 0, bestScore: 0 },
-                game6: { plays: 0, correct: 0, attempts: 0, avgTime: 0, bestScore: 0 }
+                game5: { plays: 0, correct: 0, attempts: 0, avgTime: 0, bestScore: 0 }
             },
             history: []
         };
