@@ -206,9 +206,40 @@
 
     <script src="shared.js"></script>
     <script>
+   // Optimized display functions
+        const gameNames = {
+            game1: 'Fill-in Missing Letter',
+            game2: 'Knoword',
+            game3: 'Word Hunt',
+            game4: 'Word Scramble',
+            game5: 'Spelling Bee'
+        };
+        
+        const historyGameNames = {
+            game1: 'Missing Letter',
+            game2: 'Knoword',
+            game3: 'Word Hunt',
+            game4: 'Scramble',
+            game5: 'Spelling Bee'
+        };
+        
         function displayStats() {
-            const user = getUserData();
-            const container = document.getElementById('stats-container');
+            // Show loading state immediately
+            document.getElementById('stats-container').innerHTML = `
+                <div id="loading-message">Loading your progress data...</div>
+            `;
+            
+            // Use requestAnimationFrame to prevent blocking the UI
+            requestAnimationFrame(() => {
+                const user = getUserData();
+                renderStats(user);
+            });
+        }
+        
+        function renderStats(user) {
+            // Create document fragment for batch DOM updates
+            const fragment = document.createDocumentFragment();
+            const container = document.createElement('div');
             
             // General stats
             container.innerHTML = `
@@ -236,17 +267,13 @@
                 <a href="index.html" class="dashboard-link">Back to Homepage</a>
                 <a href="dashboard.html" class="dashboard-link">Back to Dashboard</a>
             `;
+            
+            fragment.appendChild(container);
+            document.getElementById('stats-container').replaceChildren(fragment);
         }
         
         function renderGameStats(user) {
             let html = '';
-            const gameNames = {
-                game1: 'Fill-in Missing Letter',
-                game2: 'Knoword',
-                game3: 'Word Hunt',
-                game4: 'Word Scramble',
-                game5: 'Spelling Bee'
-            };
             
             for (const [gameId, stats] of Object.entries(user.gameStats)) {
                 const accuracy = calculateAccuracy(stats.correct, stats.attempts);
@@ -271,24 +298,16 @@
         function renderHistory(history) {
             if (history.length === 0) return '<p>No activity yet. Play some games to see your progress here!</p>';
             
-            const recent = history.slice(-10).reverse(); // Show last 10, newest first
+            const recent = history.slice(-10).reverse();
             let html = '<table><tr><th>Game</th><th>When</th><th>Result</th><th>Score</th><th>Duration</th></tr>';
             
             recent.forEach(item => {
-                const gameNames = {
-                    game1: 'Missing Letter',
-                    game2: 'Knoword',
-                    game3: 'Word Hunt',
-                    game4: 'Scramble',
-                    game5: 'Spelling Bee'
-                };
-                
                 const resultClass = item.isCorrect ? 'badge-success' : 'badge-danger';
                 const resultText = item.isCorrect ? 'Correct' : 'Incorrect';
                 
                 html += `
                     <tr>
-                        <td>${gameNames[item.gameId]}</td>
+                        <td>${historyGameNames[item.gameId]}</td>
                         <td><span class="timestamp">${formatTimestamp(item.timestamp)}</span></td>
                         <td><span class="badge ${resultClass}">${resultText}</span></td>
                         <td>${item.score || 0}</td>
@@ -343,7 +362,7 @@
             return Math.min(100, Math.round((earned / totalPossible) * 100));
         }
         
-        window.onload = displayStats;
+        window.addEventListener('DOMContentLoaded', displayStats);
     </script>
 </body>
 </html>
