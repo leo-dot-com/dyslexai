@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Missing Letter Game | DyslexAI</title>
-    <script src="shared.js"></script>
+    <link rel="preload" href="https://dyslexicfonts.com/fonts/OpenDyslexic-Regular.woff" as="font" type="font/woff" crossorigin>
     <style>
         :root {
             --primary: #3a7bd5;
@@ -201,6 +201,7 @@
     <h1>Fill-in the Missing Letter</h1>
     <div id="game-container"></div>
     
+    <script src="shared.js"></script>
     <script>
         const words = [
             { word: 'ap_le', missing: 'p', answer: 'apple', hint: 'A common red or green fruit' },
