@@ -376,7 +376,7 @@
             const timeSpent = (Date.now() - startTime) / 1000;
             
             // Calculate score based on time and moves
-            const score = success ? Math.max(100, 500 - Math.floor(timeSpent) - (moves * 2) : 0;
+            const score = success ? Math.max(100, 500 - Math.floor(timeSpent) - (moves * 2)) : 0;
             
             const resultElement = document.getElementById('result');
             if (success) {
