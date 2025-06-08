@@ -1,5 +1,10 @@
+// Cache user data in memory to minimize localStorage access
+let cachedUserData = null;
+
 // Initialize or get user data
 function getUserData() {
+    if (cachedUserData) return cachedUserData;
+    
     let user = localStorage.getItem('dyslexAIUser');
     if (!user) {
         user = {
@@ -19,11 +24,15 @@ function getUserData() {
             history: []
         };
         localStorage.setItem('dyslexAIUser', JSON.stringify(user));
+    } else {
+        user = JSON.parse(user);
     }
-    return JSON.parse(user);
+    
+    cachedUserData = user;
+    return user;
 }
 
-// Save game results
+// Save game results with optimized storage
 function saveGameResult(gameId, result) {
     const user = getUserData();
     const now = new Date();
@@ -43,14 +52,29 @@ function saveGameResult(gameId, result) {
     gameStats.avgTime = ((gameStats.avgTime * (gameStats.plays - 1)) + (result.timeSpent || 0)) / gameStats.plays;
     if ((result.score || 0) > gameStats.bestScore) gameStats.bestScore = result.score;
     
-    // Add to history
+    // Limit history size to 50 entries to prevent bloating
+    if (user.history.length >= 50) {
+        user.history.shift(); // Remove oldest entry
+    }
     user.history.push({
         gameId,
         timestamp: now.toISOString(),
         ...result
     });
     
-    localStorage.setItem('dyslexAIUser', JSON.stringify(user));
+    // Save to localStorage with debouncing
+    debouncedSaveUserData(user);
+}
+
+// Debounce the save operation to prevent rapid successive writes
+let saveTimeout = null;
+function debouncedSaveUserData(user) {
+    cachedUserData = user;
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        localStorage.setItem('dyslexAIUser', JSON.stringify(user));
+        saveTimeout = null;
+    }, 500); // Save after 500ms of inactivity
 }
 
 // Calculate accuracy percentage
