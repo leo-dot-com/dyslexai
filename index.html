@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DyslexAI - Revolutionizing Reading Support</title>
+    <link rel="preload" href="dashboard.html" as="document">
+    <link rel="preload" href="games/fill-in-letter.html" as="document">
+    <link rel="preload" href="games/knoword.html" as="document">
+    <link rel="preload" href="games/word-hunt.html" as="document">
+    <link rel="preload" href="games/word-scramble.html" as="document">
     <style>
         :root {
             --primary: #3a7bd5;
@@ -332,5 +337,67 @@
             Thank you so much for your time, you've made my day by trying out this demo!!
         </p>
     </section>
+   <!-- Hidden iframes for preloading content -->
+    <div style="display: none;">
+        <iframe src="dashboard.html" name="preload-dashboard" sandbox="allow-same-origin"></iframe>
+        <iframe src="games/fill-in-letter.html" name="preload-fill-in-letter" sandbox="allow-same-origin"></iframe>
+        <iframe src="games/knoword.html" name="preload-knoword" sandbox="allow-same-origin"></iframe>
+        <iframe src="games/word-hunt.html" name="preload-word-hunt" sandbox="allow-same-origin"></iframe>
+        <iframe src="games/word-scramble.html" name="preload-word-scramble" sandbox="allow-same-origin"></iframe>
+    </div>
+
+    <script>
+        // Preload strategy implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prefetch resources after a short delay to prioritize initial page load
+            setTimeout(function() {
+                // List of resources to prefetch
+                const resources = [
+                    'dashboard.html',
+                    'games/fill-in-letter.html',
+                    'games/knoword.html',
+                    'games/word-hunt.html',
+                    'games/word-scramble.html',
+                    // Add any CSS/JS files that these pages depend on
+                ];
+                
+                // Prefetch each resource
+                resources.forEach(resource => {
+                    const link = document.createElement('link');
+                    link.rel = 'prefetch';
+                    link.href = resource;
+                    link.as = resource.endsWith('.html') ? 'document' : 
+                              resource.endsWith('.css') ? 'style' : 'script';
+                    document.head.appendChild(link);
+                });
+                
+                // Warm up the connections
+                if ('connection' in navigator) {
+                    if (navigator.connection.saveData) {
+                        return; // Don't prefetch if user has save-data enabled
+                    }
+                }
+                
+                // Warm up the connections to the origins
+                const origins = new Set(resources.map(url => new URL(url, location.href).origin));
+                origins.forEach(origin => {
+                    if (origin !== location.origin) {
+                        const link = document.createElement('link');
+                        link.rel = 'preconnect';
+                        link.href = origin;
+                        document.head.appendChild(link);
+                    }
+                });
+            }, 1000); // 1 second delay to prioritize initial page load
+            
+            // Add a small delay to iframe loading to prevent contention with main page
+            window.addEventListener('load', function() {
+                const iframes = document.querySelectorAll('iframe[name^="preload-"]');
+                iframes.forEach(iframe => {
+                    iframe.src = iframe.getAttribute('src');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
