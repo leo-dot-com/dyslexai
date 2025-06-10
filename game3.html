@@ -714,8 +714,37 @@
         }
 
         // Save game results to user data
-        function saveGameResult(result) {
+        function saveGameResult(gameId, result) {
             const user = getUserData();
+            const now = new Date();
+            
+            // Update general stats
+            user.totalGames++;
+            user.totalScore += result.score || 0;
+            user.totalTime += result.timeSpent || 0;
+            user.totalCorrect += result.isCorrect ? 1 : 0;
+            user.totalAttempts++;
+            
+            // Update game-specific stats
+            const gameStats = user.gameStats[gameId];
+            gameStats.plays++;
+            gameStats.attempts++;
+            if (result.isCorrect) gameStats.correct++;
+            gameStats.avgTime = ((gameStats.avgTime * (gameStats.plays - 1)) + (result.timeSpent || 0)) / gameStats.plays;
+            if ((result.score || 0) > gameStats.bestScore) gameStats.bestScore = result.score;
+        
+            // Limit history size to 50 entries to prevent bloating
+            if (user.history.length >= 50) {
+                user.history.shift(); // Remove oldest entry
+            }
+            user.history.push({
+                gameId,
+                timestamp: now.toISOString(),
+                ...result
+            });
+            
+            // Save to localStorage with debouncing
+            debouncedSaveUserData(user);
         }
         
         // Start the game
